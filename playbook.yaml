@@ -6,7 +6,7 @@
 
   vars:
     provider:
-      password: admin
+      password: W32sobig
       server: localhost
       user: admin
       validate_certs: no
