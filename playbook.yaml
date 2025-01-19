@@ -1,51 +1,32 @@
----
-
-- name: Create a VIP, pool and pool members
-  hosts: all
-  connection: local
-
-  vars:
-    provider:
-      password: W32sobig
-      server: localhost
-      user: admin
-      validate_certs: no
-      server_port: 10443
-
-  tasks:
-    - name: Create a pool
-      bigip_pool:
-        provider: "{{ provider }}"
-        lb_method: ratio-member
-        name: web
-        slow_ramp_time: 120
-      delegate_to: localhost
-
-    - name: Add members to pool
-      bigip_pool_member:
-        provider: "{{ provider }}"
-        description: "webserver {{ item.name }}"
-        host: "{{ item.host }}"
-        name: "{{ item.name }}"
-        pool: web
-        port: 80
-      with_items:
-        - host: 10.10.10.10
-          name: web01
-        - host: 10.10.10.20
-          name: web02
-      delegate_to: localhost
-
-    - name: Create a VIP
-      bigip_virtual_server:
-        provider: "{{ provider }}"
-        description: foo-vip
-        destination: 172.16.10.108
-        name: vip-1
-        pool: web
-        port: 80
-        snat: Automap
-        profiles:
-          - http
-          - clientssl
-      delegate_to: localhost
+authors:
+  - Wojciech Wypior (@wojtek0806)
+  - Rohit Upadhyay (@urohit011)
+dependencies:
+  ansible.netcommon: ">=2.0.0"
+description: F5 BIG-IP Imperative Collection for Ansible
+documentation: https://clouddocs.f5.com/products/orchestration/ansible/devel/modules/module_index.html
+homepage: https://clouddocs.f5.com/products/orchestration/ansible/devel/
+issues: https://github.com/F5Networks/f5-ansible/issues
+license:
+  - "GPL-3.0-only"
+name: f5_modules
+namespace: f5networks
+readme: README.md
+build_ignore:
+  - tests/__pycache__
+  - tests/compat
+  - tests/mock
+  - tests/modules
+  - tests/module_utils
+  - tests/modules
+  - tests/plugins
+  - tests/unit
+  - tests/*.ini
+  - tests/*.py
+repository: https://github.com/F5Networks/f5-ansible-f5modules
+tags:
+  - f5
+  - networking
+  - bigip
+  - bigiq
+version: 1.34.0
