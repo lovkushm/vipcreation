@@ -1,0 +1,58 @@
+---
+- name: Create F5 VIP, Pool, and Attach Pool to VIP
+  hosts: 192.168.0.108  # Assuming you run this playbook locally
+  gather_facts: no
+  vars:
+    f5_host: "192.168.0.108"         # F5 BIG-IP server IP address
+    f5_user: "admin"               # F5 BIG-IP username
+    f5_password: "W32sobig"   # F5 BIG-IP password
+
+  tasks:
+    - name: Create the Pool
+      community.f5.bigip_pool:
+        server: "{{ f5_host }}"
+        user: "{{ f5_user }}"
+        password: "{{ f5_password }}"
+        validate_certs: no
+        name: osm1_443_vip
+        state: present
+        lb_method: round-robin
+        monitor: http
+      register: pool
+
+    - name: Add Pool Members to the Pool
+      community.f5.bigip_pool_member:
+        server: "{{ f5_host }}"
+        user: "{{ f5_user }}"
+        password: "{{ f5_password }}"
+        validate_certs: no
+        pool: "{{ pool.name }}"  # Referencing the pool by the registered name
+        state: present
+        name: "{{ item.name }}"
+        address: "{{ item.address }}"
+        port: "{{ item.port }}"
+      loop:
+        - { name: "member1", address: "192.168.1.10", port: 80 }
+        - { name: "member2", address: "192.168.1.11", port: 80 }
+
+    - name: Create a Virtual Server (VIP)
+      community.f5.bigip_virtual_server:
+        server: "{{ f5_host }}"
+        user: "{{ f5_user }}"
+        password: "{{ f5_password }}"
+        validate_certs: no
+        name: osm1_443_pool
+        state: present
+        destination: "192.168.1.100:80"
+        ip_protocol: tcp
+        pool: "{{ pool.name }}"  # Using the same pool created above
+        profiles:
+          - http
+          - tcp
+      register: vip
+
+    - name: Verify VIP and Pool Configuration
+      debug:
+        msg:
+          - "Pool created: {{ pool }}"
+          - "VIP created: {{ vip }}"
