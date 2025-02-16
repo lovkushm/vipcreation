@@ -1,0 +1,20 @@
+
+---
+- name: BIG-IP SETUP
+  hosts: 192.168.0.108
+  connection: local
+  gather_facts: false
+
+  tasks:
+  - name: CREATE POOL
+    bigip_pool:
+      provider:
+        server: "192.168.0.108"  # Example private IP address of the BIG-IP device
+        user: "admin"            # Example username
+        password: "W32sobig"     # Example password
+        server_port: "443"       # Example management port
+        validate_certs: no       # Disable certificate validation
+      name: "http_pool"           # Name of the pool
+      lb_method: "round-robin"    # Load balancing method
+      monitors: "/Common/http"    # Health monitor for HTTP
+      monitor_type: "and_list"    # Monitor type (use "and_list" for multiple monitors)
